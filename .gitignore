@@ -1,0 +1,5 @@
+hw1/data
+hw1/res
+hw1/.venv
+__pycache__
+*.pyc
