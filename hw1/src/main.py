@@ -96,7 +96,7 @@ if __name__ == "__main__":
         model.embedding.weight.requires_grad = False
 
     loss = torch.nn.CrossEntropyLoss()
-    optim = torch.optim.Adam(model.parameters())
+    optim = torch.optim.Adam(model.parameters(), lr=args.lr)
 
     trainData = Dataset(data["train"], args.batch_size, args.cuda)
     valData = Dataset(data["val"], args.batch_size,

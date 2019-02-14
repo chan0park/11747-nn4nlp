@@ -14,10 +14,11 @@ parser.add_argument('-cuda', action='store_true', default=False)
 parser.add_argument('-emb', action='store_true', default=True)
 parser.add_argument('-emb_dim', type=int, action='store', default=300)
 parser.add_argument('-fix_emb', action='store_true', default=False)
-
 parser.add_argument('-out_dim', type=int, action='store', default=100)
 parser.add_argument('-window_dim', type=int, action='store', default=4)
+
 parser.add_argument('-batch_size', type=int, action='store', default=64)
+parser.add_argument('-lr', type=float, action='store', default=0.001)
 
 
 parser.add_argument('-path_data', type=str, action='store',
