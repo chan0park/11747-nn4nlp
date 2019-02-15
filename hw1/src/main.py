@@ -31,6 +31,8 @@ def trainModel(model, loss_fn, optim, epochs, data_train, data_val=None):
 
         rand_order = torch.randperm(len_data)
         for i in range(len_data):
+            if args.verbose and (i+1) % args.report == 0:
+                print("batch {0}/{1}: loss {2:.3f}/ acc {3:.3f}".format(i+1, len_data, total_loss/total_samples, total_correct/total_samples))
             batch, label = data[rand_order[i]]
             num_sample = len(label)
 
@@ -60,7 +62,7 @@ def trainModel(model, loss_fn, optim, epochs, data_train, data_val=None):
         start = time.time()
         train_loss, train_acc = trainEpoch()
         val_loss, val_acc = trainEpoch(bool_eval=True)
-        print("ep {0}: t {1:.3f}/v {2:.3f} (t {3:.3f}/v {4:3f}) ({5}s)".format(ep +
+        print("ep {0}: t {1:.3f}/v {2:.3f} (t {3:.3f}/v {4:.3f}) ({5:.2f}s)".format(ep +
                                                                                1, train_acc, val_acc, train_loss, val_loss, (time.time()-start)))
         if val_acc > best_acc:
             best_acc = val_acc
@@ -90,18 +92,19 @@ if __name__ == "__main__":
 
     if args.model == "cnn":
         model = CNN(len(data["word2idx"]), args.emb_dim,
-                    args.out_dim, args.window_dim, len(data["lbl2idx"]), emb)
+                    args.out_dim, args.window_dim, len(data["lbl2idx"]), args.dp, emb)
 
     if args.fix_emb:
         model.embedding.weight.requires_grad = False
 
     loss = torch.nn.CrossEntropyLoss()
-    optim = torch.optim.Adam(model.parameters(), lr=args.lr)
+    optim = torch.optim.Adam(model.parameters(), lr=args.lr,  weight_decay=args.l2)
 
     trainData = Dataset(data["train"], args.batch_size, args.cuda)
     valData = Dataset(data["val"], args.batch_size,
                       args.cuda) if args.eval else None
-
+    if args.cuda:
+        model.cuda()
     trainModel(model, loss, optim, args.epochs, trainData, valData)
 
     raise
