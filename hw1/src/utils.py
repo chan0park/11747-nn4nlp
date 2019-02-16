@@ -2,6 +2,7 @@ import pickle
 import os
 import numpy as np
 import sys
+import random
 from parser import args
 
 
@@ -9,8 +10,7 @@ def normalize_text(text):
     # TODO
     # use spacy
     # stopwords removal?
-    # stemming (remove s?)
-    #
+    # stemming (remove s?) - expected to have not big impact on the performance as we are using pre-trained word embedding.
     return text
 
 
@@ -55,7 +55,7 @@ def import_data(pkl_path, pkl_emb_path):
     return data, emb
 
 
-def import_and_preprocess_data(path, bool_val=False, bool_test=False):
+def import_and_preprocess_data(path, bool_val=False, bool_test=False, bool_sort=False):
     def preprocess_data(data, val=False):
         lbl, text = data.strip().split(" ||| ")
         lbl_idx = get_idx(lbl2idx, lbl, val)
@@ -93,9 +93,10 @@ def import_and_preprocess_data(path, bool_val=False, bool_test=False):
         with open(os.path.join(path, "topicclass_valid.txt"), "r") as file:
             val = file.readlines()
         val = [preprocess_data(d, val=True) for d in val]
-        sent_len = [len(x[1]) for x in val]
-        sorted_idx = np.argsort(sent_len)
-        val = [val[idx] for idx in sorted_idx]
+        if bool_sort:
+            sent_len = [len(x[1]) for x in val]
+            sorted_idx = np.argsort(sent_len)
+            val = [val[idx] for idx in sorted_idx]
     else:
         val = None
 
@@ -104,7 +105,8 @@ def import_and_preprocess_data(path, bool_val=False, bool_test=False):
     data["train"] = train
     data["val"] = val
     data["word2idx"] = word2idx
-    data["lbl2idx"] = idx2lbl
+    data["lbl2idx"] = lbl2idx
+    data["idx2lbl"] = idx2lbl
 
     return data
 

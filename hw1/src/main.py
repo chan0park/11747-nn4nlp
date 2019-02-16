@@ -71,11 +71,21 @@ def trainModel(model, loss_fn, optim, epochs, data_train, data_val=None):
 
 
 def predict(model, data):
-    pass
+    preds = []
+    for i in range(len(data)):
+        batch, label = data[i]
+        output = model(batch)
+        pred = output.argmax(1)
+        preds.extend(pred)
+    return preds
 
 
 def save_prediction(path, data, idx2lbl):
-    pass
+    import codecs
+    predF = codecs.open(path, 'w', 'utf-8')
+    for label in data:
+        predF.write(idx2lbl[int(label)]+"\n")
+        predF.flush()
 
 
 if __name__ == "__main__":
@@ -85,6 +95,10 @@ if __name__ == "__main__":
     data, emb = import_data(pkl_path, pkl_emb_path)
     train_data = data["train"]
     val_data = data["val"]
+
+    trainData = Dataset(data["train"], args.batch_size, args.cuda)
+    valData = Dataset(data["val"], args.batch_size,
+                      args.cuda) if args.eval else None
 
     if args.emb:
         assert emb.shape[1] == args.emb_dim
@@ -100,19 +114,17 @@ if __name__ == "__main__":
     loss = torch.nn.CrossEntropyLoss()
     optim = torch.optim.Adam(model.parameters(), lr=args.lr,  weight_decay=args.l2)
 
-    trainData = Dataset(data["train"], args.batch_size, args.cuda)
-    valData = Dataset(data["val"], args.batch_size,
-                      args.cuda) if args.eval else None
     if args.cuda:
         model.cuda()
     trainModel(model, loss, optim, args.epochs, trainData, valData)
 
-    raise
-    prediction_val = predict(model, data["val"])
+    preds_val = predict(model, valData)
     save_prediction(args.path_savedir+"{}_{}.val".format(args.model,
-                                                         args.epochs), prediction_val, idx2lbl)
+                                                            args.epochs), preds_val, data["idx2lbl"])
 
     if args.submit:
+        valData = Dataset(data["val"], args.batch_size,
+                        args.cuda) if args.eval else None
         prediction_test = predict(model, data["test"])
         save_prediction(args.path_savedir+"{}_{}.test".format(args.model,
-                                                              args.epochs), prediction_test, idx2lbl)
+                                                                args.epochs), prediction_test, data["idx2lbl"])

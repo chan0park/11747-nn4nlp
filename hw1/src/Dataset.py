@@ -25,18 +25,17 @@ class Dataset(object):
             data = [[1]*(max_length-lengths[i])+x for i, x in enumerate(data)]
         return data
 
-    def __getitem__(self, index):
+    def __getitem__(self, idx):
         def wrap(data):
             data = torch.LongTensor(data)
             if self.cuda:
                 data = data.cuda()
             return Variable(data, volatile=self.volatile)
-
-        assert index < self.num_batch, "index exceeding the number of batch"
+        
         dataBatch = self._batchify(
-            self.data[index*self.batch_size:(index+1)*self.batch_size],
+            self.data[idx*self.batch_size:(idx+1)*self.batch_size],
             align_right=False)
-        labelBatch = self.label[index *
-                                self.batch_size:(index+1)*self.batch_size]
+        labelBatch = self.label[idx *
+                                self.batch_size:(idx+1)*self.batch_size]
 
         return wrap(dataBatch), wrap(labelBatch)

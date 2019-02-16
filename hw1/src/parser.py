@@ -7,7 +7,7 @@ parser.add_argument('-epochs', type=int, action='store', default=10)
 
 parser.add_argument('-test', action='store_true', default=False)
 parser.add_argument('-eval', action='store_true', default=True)
-parser.add_argument('-submit', action='store_true', default=False)
+parser.add_argument('-submit', action='store_true', default=True)
 parser.add_argument('-verbose', action='store_true', default=False)
 parser.add_argument('-cuda', action='store_true', default=False)
 parser.add_argument('-report', type=int, default=4000)
