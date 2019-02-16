@@ -103,18 +103,18 @@ def save_prediction(path, data, idx2lbl):
 if __name__ == "__main__":
     pkl_path = args.path_data + \
         "processed_{}.pkl".format("eval" if args.eval else "train")
-    pkl_emb_path = pkl_path.replace(".pkl", ".emb.pkl") if args.emb else None
+    pkl_emb_path = pkl_path.replace(".pkl", ".emb.pkl") if args.init_emb else None
     data, emb = import_data(pkl_path, pkl_emb_path)
-    # train_data = data["train"]
-    # val_data = data["val"]
 
     trainData = Dataset(data["train"], args.batch_size, args.cuda)
     valData = Dataset(data["val"], args.batch_size,
                       args.cuda) if args.eval else None
 
-    if args.emb:
+    if args.init_emb:
         assert emb.shape[1] == args.emb_dim
         emb = torch.Tensor(emb)
+    else:
+        emb = None
 
     if args.model == "cnn":
         model = CNN(len(data["word2idx"]), args.emb_dim,
@@ -130,15 +130,14 @@ if __name__ == "__main__":
         model.cuda()
     trainModel(args, model, loss, optim, trainData, valData)
 
-    # load the best model saved during training
-    model.load_state_dict(torch.load(args.path_savedir+"{}_{}.model".format(args.model,args.epochs)))
-    model.eval()
-
-    preds_val = predict(model, valData)
-    save_prediction(args.path_savedir+"{}_{}.val".format(args.model,
-                                                            args.epochs), preds_val, data["idx2lbl"])
-
     if args.submit:
+        # load the best model saved during training
+        model.load_state_dict(torch.load(args.path_savedir+"{}_{}.model".format(args.model,args.epochs)))
+        model.eval()
+
+        preds_val = predict(model, valData)
+        save_prediction(args.path_savedir+"{}_{}.val".format(args.model,
+                                                                args.epochs), preds_val, data["idx2lbl"])
         testData = Dataset(data["test"], args.batch_size, args.cuda)
         preds_test = predict(model, testData)
         save_prediction(args.path_savedir+"{}_{}.test".format(args.model,

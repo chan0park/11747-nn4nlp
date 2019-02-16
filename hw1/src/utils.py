@@ -10,9 +10,10 @@ from matplotlib import pyplot
 
 def normalize_text(text):
     # TODO
-    # use spacy
     # stopwords removal?
-    # stemming (remove s?) - expected to have not big impact on the performance as we are using pre-trained word embedding.
+    # lowercase?
+    # stemming (remove s?)
+    # expected not to have big impact on the performance as we are using pre-trained word embedding.
     return text
 
 
@@ -72,11 +73,11 @@ def import_and_preprocess_data(path, bool_val=False, bool_submit=False, bool_tes
             return 0  # return <unk> when a label in val data did not appear in the train data
         else:
             # oov word
-            # TODO : classify oov words to <unk>, <num>, <ne>, <noteng>
+            # TODO : classify oov words to <unk>, <num>, <ne>, <not-eng>
             idx = len(vocab)
             vocab[key] = idx
             return idx
-    # oov = ["<unk>", "<num>", "<ne>","<noteng>"]
+    # oov = ["<unk>", "<num>", "<ne>","<not-eng>"]
     oov = ["<unk>", "<pad>"]
     word2idx, lbl2idx = {x: i for i, x in enumerate(oov)}, {"<unk>": 0}
     with open(os.path.join(path, "topicclass_train.txt"), "r") as file:
@@ -165,10 +166,8 @@ def load_word_embeddings(path, data_vocab):
 
 
 def load_glove(path='./data/glove.840B.300d.txt'):
-    """Load glove vectors and dictionary from the glove text file. At the end, it saves the vector and the dictionary as pickle object to load those faster in future access."""
     glove_dict = {}
     vecs = []
-    # Read in the data.
     with open(path, 'r', encoding='utf-8') as file:
         i = 0
         for line in file:
@@ -197,6 +196,7 @@ def dump_pickle(obj, path):
 
 
 def dump_large_pickle(obj, path):
+    # This code is a modification of answer in stack overflow (stackoverflow.com/a/38003910/1602613)
     max_bytes = 2**31 - 1
     bytes_out = pickle.dumps(obj, protocol=pickle.HIGHEST_PROTOCOL)
     n_bytes = sys.getsizeof(bytes_out)
@@ -206,6 +206,7 @@ def dump_large_pickle(obj, path):
 
 
 def load_large_pickle(path):
+    # This code is a modification of answer in stack overflow (stackoverflow.com/a/38003910/1602613)
     max_bytes = 2**31 - 1
     input_size = os.path.getsize(path)
     bytes_in = bytearray(0)
