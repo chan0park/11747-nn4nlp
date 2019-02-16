@@ -31,7 +31,7 @@ class Dataset(object):
             if self.cuda:
                 data = data.cuda()
             return Variable(data, volatile=self.volatile)
-        
+
         dataBatch = self._batchify(
             self.data[idx*self.batch_size:(idx+1)*self.batch_size],
             align_right=False)

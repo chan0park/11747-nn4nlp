@@ -1,3 +1,4 @@
+from matplotlib import pyplot
 import pickle
 import os
 import numpy as np
@@ -6,13 +7,14 @@ import random
 from parser import args
 import matplotlib
 matplotlib.use('Agg')
-from matplotlib import pyplot
+
 
 def normalize_text(text):
     # TODO
-    # use spacy
     # stopwords removal?
-    # stemming (remove s?) - expected to have not big impact on the performance as we are using pre-trained word embedding.
+    # lowercase?
+    # stemming (remove s?)
+    # expected not to have big impact on the performance as we are using pre-trained word embedding.
     return text
 
 
@@ -72,11 +74,11 @@ def import_and_preprocess_data(path, bool_val=False, bool_submit=False, bool_tes
             return 0  # return <unk> when a label in val data did not appear in the train data
         else:
             # oov word
-            # TODO : classify oov words to <unk>, <num>, <ne>, <noteng>
+            # TODO : classify oov words to <unk>, <num>, <ne>, <not-eng>
             idx = len(vocab)
             vocab[key] = idx
             return idx
-    # oov = ["<unk>", "<num>", "<ne>","<noteng>"]
+    # oov = ["<unk>", "<num>", "<ne>","<not-eng>"]
     oov = ["<unk>", "<pad>"]
     word2idx, lbl2idx = {x: i for i, x in enumerate(oov)}, {"<unk>": 0}
     with open(os.path.join(path, "topicclass_train.txt"), "r") as file:
@@ -165,10 +167,8 @@ def load_word_embeddings(path, data_vocab):
 
 
 def load_glove(path='./data/glove.840B.300d.txt'):
-    """Load glove vectors and dictionary from the glove text file. At the end, it saves the vector and the dictionary as pickle object to load those faster in future access."""
     glove_dict = {}
     vecs = []
-    # Read in the data.
     with open(path, 'r', encoding='utf-8') as file:
         i = 0
         for line in file:
@@ -197,6 +197,7 @@ def dump_pickle(obj, path):
 
 
 def dump_large_pickle(obj, path):
+    # This code is a modification of answer in stack overflow (stackoverflow.com/a/38003910/1602613)
     max_bytes = 2**31 - 1
     bytes_out = pickle.dumps(obj, protocol=pickle.HIGHEST_PROTOCOL)
     n_bytes = sys.getsizeof(bytes_out)
@@ -206,6 +207,7 @@ def dump_large_pickle(obj, path):
 
 
 def load_large_pickle(path):
+    # This code is a modification of answer in stack overflow (stackoverflow.com/a/38003910/1602613)
     max_bytes = 2**31 - 1
     input_size = os.path.getsize(path)
     bytes_in = bytearray(0)
@@ -215,21 +217,21 @@ def load_large_pickle(path):
     obj = pickle.loads(bytes_in)
     return obj
 
+
 def plot_figure(path, data, start_epoch=1):
     """Plot training loss points (maximum four sets of points) and save as a figure."""
     data = list(zip(*data))
-    assert len(data)<5
-    if len(data)==4:
+    assert len(data) < 5
+    if len(data) == 4:
         legends = ["train_acc", "train_loss", "val_acc", "val_loss"]
-        colors = ["blue","red"]
-    
+        colors = ["blue", "red"]
 
     eps = list(range(start_epoch, start_epoch+len(data[0])))
 
     fig = pyplot.figure()
     fig, ax = pyplot.subplots()
     for i, points in enumerate(data):
-        if i % 2 == 0 and not points[0]==0.0:
+        if i % 2 == 0 and not points[0] == 0.0:
             pyplot.plot(eps, points, label=legends[i], color=colors[int(i/2)])
 
     # ax.set_title("train/val accuracy")
@@ -242,7 +244,7 @@ def plot_figure(path, data, start_epoch=1):
     fig = pyplot.figure()
     fig, ax = pyplot.subplots()
     for i, points in enumerate(data):
-        if i % 2 == 1 and not points[0]==0.0:
+        if i % 2 == 1 and not points[0] == 0.0:
             pyplot.plot(eps, points, label=legends[i], color=colors[int(i/2)])
 
     # ax.set_title("train/val loss")

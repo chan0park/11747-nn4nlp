@@ -33,7 +33,8 @@ def trainModel(args, model, loss_fn, optim, data_train, data_val=None):
         rand_order = torch.randperm(len_data)
         for i in range(len_data):
             if args.verbose and (i+1) % args.report == 0:
-                print("batch {0}/{1}: loss {2:.3f}/ acc {3:.3f}".format(i+1, len_data, total_loss/total_samples, total_correct/total_samples))
+                print("batch {0}/{1}: loss {2:.3f}/ acc {3:.3f}".format(i+1,
+                                                                        len_data, total_loss/total_samples, total_correct/total_samples))
             batch, label = data[rand_order[i]]
             num_sample = len(label)
 
@@ -67,19 +68,21 @@ def trainModel(args, model, loss_fn, optim, data_train, data_val=None):
         train_loss, train_acc = trainEpoch()
         val_loss, val_acc = trainEpoch(bool_eval=True)
         print("ep {0}: t {1:.3f}/v {2:.3f} (t {3:.3f}/v {4:.3f}) ({5:.2f}s)".format(ep +
-                                                                               1, train_acc, val_acc, train_loss, val_loss, (time.time()-start)))
+                                                                                    1, train_acc, val_acc, train_loss, val_loss, (time.time()-start)))
         plot_res.append([train_acc, train_loss, val_acc, val_loss])
         if val_acc > best_acc:
             best_acc = val_acc
             best_loss = val_loss
             best_ep = ep
-            torch.save(model.state_dict(), args.path_savedir+"{}_{}.model".format(args.model,args.epochs))
+            torch.save(model.state_dict(), args.path_savedir +
+                       "{}_{}.model".format(args.model, args.epochs))
             print("best model found!")
 
     if not args.test:
-        plot_figure(args.path_savedir+"{}_{}".format(args.model,args.epochs), plot_res)
-    print("\nbest epoch: {}\nbest_acc: {}\nbest_loss: {}".format(best_ep, best_acc, best_loss))
-
+        plot_figure(args.path_savedir +
+                    "{}_{}".format(args.model, args.epochs), plot_res)
+    print("\nbest epoch: {}\nbest_acc: {}\nbest_loss: {}".format(
+        best_ep, best_acc, best_loss))
 
 
 def predict(model, data):
@@ -103,18 +106,19 @@ def save_prediction(path, data, idx2lbl):
 if __name__ == "__main__":
     pkl_path = args.path_data + \
         "processed_{}.pkl".format("eval" if args.eval else "train")
-    pkl_emb_path = pkl_path.replace(".pkl", ".emb.pkl") if args.emb else None
+    pkl_emb_path = pkl_path.replace(
+        ".pkl", ".emb.pkl") if args.init_emb else None
     data, emb = import_data(pkl_path, pkl_emb_path)
-    # train_data = data["train"]
-    # val_data = data["val"]
 
     trainData = Dataset(data["train"], args.batch_size, args.cuda)
     valData = Dataset(data["val"], args.batch_size,
                       args.cuda) if args.eval else None
 
-    if args.emb:
+    if args.init_emb:
         assert emb.shape[1] == args.emb_dim
         emb = torch.Tensor(emb)
+    else:
+        emb = None
 
     if args.model == "cnn":
         model = CNN(len(data["word2idx"]), args.emb_dim,
@@ -124,22 +128,23 @@ if __name__ == "__main__":
         model.embedding.weight.requires_grad = False
 
     loss = torch.nn.CrossEntropyLoss()
-    optim = torch.optim.Adam(model.parameters(), lr=args.lr,  weight_decay=args.l2)
+    optim = torch.optim.Adam(
+        model.parameters(), lr=args.lr,  weight_decay=args.l2)
 
     if args.cuda:
         model.cuda()
     trainModel(args, model, loss, optim, trainData, valData)
 
-    # load the best model saved during training
-    model.load_state_dict(torch.load(args.path_savedir+"{}_{}.model".format(args.model,args.epochs)))
-    model.eval()
-
-    preds_val = predict(model, valData)
-    save_prediction(args.path_savedir+"{}_{}.val".format(args.model,
-                                                            args.epochs), preds_val, data["idx2lbl"])
-
     if args.submit:
+        # load the best model saved during training
+        model.load_state_dict(torch.load(
+            args.path_savedir+"{}_{}.model".format(args.model, args.epochs)))
+        model.eval()
+
+        preds_val = predict(model, valData)
+        save_prediction(args.path_savedir+"{}_{}.val".format(args.model,
+                                                             args.epochs), preds_val, data["idx2lbl"])
         testData = Dataset(data["test"], args.batch_size, args.cuda)
         preds_test = predict(model, testData)
         save_prediction(args.path_savedir+"{}_{}.test".format(args.model,
-                                                                args.epochs), preds_test, data["idx2lbl"])
+                                                              args.epochs), preds_test, data["idx2lbl"])
