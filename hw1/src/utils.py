@@ -203,9 +203,9 @@ def load_large_pickle(path):
     obj = pickle.loads(bytes_in)
     return obj
 
-def plot_figure(path, plot_res, start_epoch=1):
+def plot_figure(path, data, start_epoch=1):
     """Plot training loss points (maximum four sets of points) and save as a figure."""
-    data = zip(*data)
+    data = list(zip(*data))
     assert len(data)<5
     if len(data)==4:
         legends = ["train_acc", "train_loss", "val_acc", "val_loss"]
