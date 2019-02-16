@@ -29,7 +29,7 @@ def import_data(pkl_path, pkl_emb_path):
             if args.verbose:
                 print("start processing data from {}...".format(args.path_data))
             data = import_and_preprocess_data(
-                args.path_data, args.eval, args.test)
+                args.path_data, args.eval, args.submit, args.test)
 
             if args.verbose:
                 print("loading word embeddings...")
@@ -49,7 +49,7 @@ def import_data(pkl_path, pkl_emb_path):
             if args.verbose:
                 print("start processing data from {}...".format(args.path_data))
             data = import_and_preprocess_data(
-                args.path_data, args.eval, args.test)
+                args.path_data, args.eval, args.submit, args.test)
             if not args.test:
                 dump_pickle(data, pkl_path)
                 if args.verbose:
@@ -57,7 +57,7 @@ def import_data(pkl_path, pkl_emb_path):
     return data, emb
 
 
-def import_and_preprocess_data(path, bool_val=False, bool_test=False, bool_sort=False):
+def import_and_preprocess_data(path, bool_val=False, bool_submit=False, bool_test=False, bool_sort=False):
     def preprocess_data(data, val=False):
         lbl, text = data.strip().split(" ||| ")
         lbl_idx = get_idx(lbl2idx, lbl, val)
@@ -102,10 +102,22 @@ def import_and_preprocess_data(path, bool_val=False, bool_test=False, bool_sort=
     else:
         val = None
 
+    if bool_val:
+        with open(os.path.join(path, "topicclass_test.txt"), "r") as file:
+            test = file.readlines()
+        test = [preprocess_data(d, val=True) for d in test]
+        if bool_sort:
+            sent_len = [len(x[1]) for x in test]
+            sorted_idx = np.argsort(sent_len)
+            test = [test[idx] for idx in sorted_idx]
+    else:
+        test = None
+
     idx2lbl = {i: l for l, i in lbl2idx.items()}
     data = {}
     data["train"] = train
     data["val"] = val
+    data["test"] = test
     data["word2idx"] = word2idx
     data["lbl2idx"] = lbl2idx
     data["idx2lbl"] = idx2lbl

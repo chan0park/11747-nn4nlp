@@ -102,8 +102,8 @@ if __name__ == "__main__":
         "processed_{}.pkl".format("eval" if args.eval else "train")
     pkl_emb_path = pkl_path.replace(".pkl", ".emb.pkl") if args.emb else None
     data, emb = import_data(pkl_path, pkl_emb_path)
-    train_data = data["train"]
-    val_data = data["val"]
+    # train_data = data["train"]
+    # val_data = data["val"]
 
     trainData = Dataset(data["train"], args.batch_size, args.cuda)
     valData = Dataset(data["val"], args.batch_size,
@@ -132,8 +132,7 @@ if __name__ == "__main__":
                                                             args.epochs), preds_val, data["idx2lbl"])
 
     if args.submit:
-        valData = Dataset(data["val"], args.batch_size,
-                        args.cuda) if args.eval else None
-        prediction_test = predict(model, data["test"])
+        testData = Datset(data["test"], args.batch_size, args.cuda)
+        preds_test = predict(model, testData)
         save_prediction(args.path_savedir+"{}_{}.test".format(args.model,
-                                                                args.epochs), prediction_test, data["idx2lbl"])
+                                                                args.epochs), preds_test, data["idx2lbl"])
