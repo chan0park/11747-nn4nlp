@@ -20,7 +20,7 @@ parser.add_argument('-window_dim', type=int, action='store', default=4)
 
 parser.add_argument('-batch_size', type=int, action='store', default=16)
 parser.add_argument('-dp', type=float, action='store', default=0.1)
-parser.add_argument('-lr', type=float, action='store', default=0.00005)
+parser.add_argument('-lr', type=float, action='store', default=0.0005)
 parser.add_argument('-l2', type=float, action='store', default=0.0001)
 
 parser.add_argument('-path_data', type=str, action='store',

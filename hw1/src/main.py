@@ -57,7 +57,7 @@ def trainModel(args, model, loss_fn, optim, data_train, data_val=None):
 
     print(model)
     model.train()
-    best_ep, best_acc = -1, 0
+    best_ep, best_acc, best_loss = -1, 0, 0
     plot_res = []
 
     for ep in range(args.epochs):
@@ -69,11 +69,13 @@ def trainModel(args, model, loss_fn, optim, data_train, data_val=None):
         plot_res.append([train_acc, train_loss, val_acc, val_loss])
         if val_acc > best_acc:
             best_acc = val_acc
+            best_loss = val_loss
             best_ep = ep
             print("best model found!")
 
     if not args.test:
         plot_figure(args.path_savedir+"{}_{}".format(args.model,args.epochs), plot_res)
+    print("\nbest epoch: {}\nbest_acc: {}\nbest_loss: {}".format(best_ep, best_acc, best_loss))
 
 
 
