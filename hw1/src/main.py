@@ -58,6 +58,7 @@ def trainModel(args, model, loss_fn, optim, data_train, data_val=None):
     print(model)
     model.train()
     best_ep, best_acc, best_loss = -1, 0, 0
+    best_model = None
     plot_res = []
 
     for ep in range(args.epochs):
@@ -71,11 +72,13 @@ def trainModel(args, model, loss_fn, optim, data_train, data_val=None):
             best_acc = val_acc
             best_loss = val_loss
             best_ep = ep
+            best_model = model
             print("best model found!")
 
     if not args.test:
         plot_figure(args.path_savedir+"{}_{}".format(args.model,args.epochs), plot_res)
     print("\nbest epoch: {}\nbest_acc: {}\nbest_loss: {}".format(best_ep, best_acc, best_loss))
+    return best_model
 
 
 
@@ -125,14 +128,14 @@ if __name__ == "__main__":
 
     if args.cuda:
         model.cuda()
-    trainModel(args, model, loss, optim, trainData, valData)
+    best_model = trainModel(args, model, loss, optim, trainData, valData)
 
-    preds_val = predict(model, valData)
+    preds_val = predict(best_model, valData)
     save_prediction(args.path_savedir+"{}_{}.val".format(args.model,
                                                             args.epochs), preds_val, data["idx2lbl"])
 
     if args.submit:
-        testData = Datset(data["test"], args.batch_size, args.cuda)
-        preds_test = predict(model, testData)
+        testData = Dataset(data["test"], args.batch_size, args.cuda)
+        preds_test = predict(best_model, testData)
         save_prediction(args.path_savedir+"{}_{}.test".format(args.model,
                                                                 args.epochs), preds_test, data["idx2lbl"])
