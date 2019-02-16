@@ -6,7 +6,7 @@ import numpy as np
 import time
 
 from models import CNN
-from utils import import_data
+from utils import import_data, plot_figure
 from parser import args
 from Dataset import Dataset
 from tqdm import tqdm
@@ -14,7 +14,7 @@ from tqdm import tqdm
 random.seed(11)
 
 
-def trainModel(model, loss_fn, optim, epochs, data_train, data_val=None):
+def trainModel(args, model, loss_fn, optim, data_train, data_val=None):
     def trainEpoch(bool_eval=False):
         total_loss = 0
         total_correct = 0
@@ -58,16 +58,23 @@ def trainModel(model, loss_fn, optim, epochs, data_train, data_val=None):
     print(model)
     model.train()
     best_ep, best_acc = -1, 0
-    for ep in range(epochs):
+    plot_res = []
+
+    for ep in range(args.epochs):
         start = time.time()
         train_loss, train_acc = trainEpoch()
         val_loss, val_acc = trainEpoch(bool_eval=True)
         print("ep {0}: t {1:.3f}/v {2:.3f} (t {3:.3f}/v {4:.3f}) ({5:.2f}s)".format(ep +
                                                                                1, train_acc, val_acc, train_loss, val_loss, (time.time()-start)))
+        plot_res.append([train_acc, train_loss, val_acc, val_loss])
         if val_acc > best_acc:
             best_acc = val_acc
             best_ep = ep
             print("best model found!")
+
+    if not args.test:
+        plot_figure(args.path_savedir+"{}_{}".format(args.model,args.epochs), plot_res)
+
 
 
 def predict(model, data):
@@ -116,7 +123,7 @@ if __name__ == "__main__":
 
     if args.cuda:
         model.cuda()
-    trainModel(model, loss, optim, args.epochs, trainData, valData)
+    trainModel(args, model, loss, optim, trainData, valData)
 
     preds_val = predict(model, valData)
     save_prediction(args.path_savedir+"{}_{}.val".format(args.model,
