@@ -1,3 +1,4 @@
+from matplotlib import pyplot
 import pickle
 import os
 import numpy as np
@@ -6,7 +7,7 @@ import random
 from parser import args
 import matplotlib
 matplotlib.use('Agg')
-from matplotlib import pyplot
+
 
 def normalize_text(text):
     # TODO
@@ -216,21 +217,21 @@ def load_large_pickle(path):
     obj = pickle.loads(bytes_in)
     return obj
 
+
 def plot_figure(path, data, start_epoch=1):
     """Plot training loss points (maximum four sets of points) and save as a figure."""
     data = list(zip(*data))
-    assert len(data)<5
-    if len(data)==4:
+    assert len(data) < 5
+    if len(data) == 4:
         legends = ["train_acc", "train_loss", "val_acc", "val_loss"]
-        colors = ["blue","red"]
-    
+        colors = ["blue", "red"]
 
     eps = list(range(start_epoch, start_epoch+len(data[0])))
 
     fig = pyplot.figure()
     fig, ax = pyplot.subplots()
     for i, points in enumerate(data):
-        if i % 2 == 0 and not points[0]==0.0:
+        if i % 2 == 0 and not points[0] == 0.0:
             pyplot.plot(eps, points, label=legends[i], color=colors[int(i/2)])
 
     # ax.set_title("train/val accuracy")
@@ -243,7 +244,7 @@ def plot_figure(path, data, start_epoch=1):
     fig = pyplot.figure()
     fig, ax = pyplot.subplots()
     for i, points in enumerate(data):
-        if i % 2 == 1 and not points[0]==0.0:
+        if i % 2 == 1 and not points[0] == 0.0:
             pyplot.plot(eps, points, label=legends[i], color=colors[int(i/2)])
 
     # ax.set_title("train/val loss")
